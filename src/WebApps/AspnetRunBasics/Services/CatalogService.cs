@@ -1,5 +1,6 @@
 ﻿using AspnetRunBasics.Extensions;
 using AspnetRunBasics.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,16 +11,29 @@ namespace AspnetRunBasics.Services
     public class CatalogService : ICatalogService
     {
         private readonly HttpClient _client;
+        private readonly ILogger<CatalogService> _logger;
 
-        public CatalogService(HttpClient client)
+        public CatalogService(HttpClient client,
+            ILogger<CatalogService> logger)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<IEnumerable<CatalogModel>> GetCatalog()
         {
-            var response = await _client.GetAsync("/Catalog");
-            return await response.ReadContentAs<List<CatalogModel>>();
+            _logger.LogDebug("Getting Catalog Products for url: {url}", _client.BaseAddress);
+
+            try
+            {
+                var response = await _client.GetAsync("/Catalog");
+                return await response.ReadContentAs<List<CatalogModel>>();
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occured when retrieving Catalog.");
+            }
+            return null;
+            
         }
 
         public async Task<CatalogModel> GetCatalog(string id)

@@ -69,6 +69,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "DatabaseSettings:ConnectionString=mongodb://catalogdb:27017"
+      - "ElasticConfiguration:Uri=http://elasticsearch:9200"
+      - "Serilog:MinimumLevel:Default=Information"
+      - "Serilog:MinimumLevel:Overide:Microsoft=Warning"
     depends_on:
       - catalogdb
     ports:
@@ -138,6 +141,9 @@ services:
       - "ApiSettings:CatalogUrl=http://catalog.api"
       - "ApiSettings:BasketUrl=http://basket.api"
       - "ApiSettings:OrderingUrl=http://ordering.api"
+      - "ElasticConfiguration:Uri=http://elasticsearch:9200"
+      - "Serilog:MinimumLevel:Default=Information"
+      - "Serilog:MinimumLevel:Overide:Microsoft=Warning"
     depends_on:
       - catalog.api
       - basket.api

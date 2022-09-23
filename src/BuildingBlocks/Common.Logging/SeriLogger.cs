@@ -30,7 +30,7 @@ namespace Common.Logging
                     NumberOfShards = 2
                 })
                 .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName)
-                .Enrich.WithProperty("Environment", context.HostingEnvironment.ApplicationName)
+                .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
                 .ReadFrom.Configuration(context.Configuration);
             };
     }

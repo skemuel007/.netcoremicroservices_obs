@@ -1,5 +1,6 @@
 using Basket.API.GrpcServices;
 using Basket.API.Repositories;
+using Common.Logging;
 using Discount.Grpc.Protos;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -34,9 +35,12 @@ namespace Basket.API
             services.AddScoped<IBasketRepository, BasketRepository>();
             services.AddAutoMapper(typeof(Startup));
 
+            services.AddTransient<LoggingDelegatingHandler>();
+
             // Grpc Configuration
             services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>
-                (o => o.Address = new Uri(Configuration["GrpcSettings:DiscountUrl"]));
+                (o => o.Address = new Uri(Configuration["GrpcSettings:DiscountUrl"]))
+                .AddHttpMessageHandler<LoggingDelegatingHandler>();
             services.AddScoped<DiscountGrpcService>();
 
             // MassTransit-RabbitMQ Configuration

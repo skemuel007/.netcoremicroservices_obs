@@ -84,6 +84,9 @@ services:
       - "CacheSettings:ConnectionString=basketdb:6379"
       - "GrpcSettings:DiscountUrl=http://discount.grpc"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "ElasticConfiguration:Uri=http://elasticsearch:9200"
+      - "Serilog:MinimumLevel:Default=Information"
+      - "Serilog:MinimumLevel:Overide:Microsoft=Warning"
     depends_on:
       - basketdb
       - rabbitmq

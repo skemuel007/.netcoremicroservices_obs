@@ -150,12 +150,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "ApiSettings:GatewayAddress=http://ocelotapigw"
+      - "ElasticConfiguration:Uri=http://elasticsearch:9200"
+      - "Serilog:MinimumLevel:Default=Information"
+      - "Serilog:MinimumLevel:Overide:Microsoft=Warning"
     depends_on:
       - ocelotapigw
       - catalog.api
       - basket.api
       - discount.api
       - ordering.api
+      - elasticsearch
     ports:
       - "8006:80"
 
@@ -169,7 +173,7 @@ services:
     ports:
       - "9200:9200"
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
+      - elasticsearch_data:/usr/share/elasticsearch/data
 
   kibana:
     container_name: kibana

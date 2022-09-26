@@ -1,7 +1,9 @@
 using EventBus.Messages.Common;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +13,11 @@ using Microsoft.OpenApi.Models;
 using Ordering.API.EventBusConsumer;
 using Ordering.Application;
 using Ordering.Infrastructure;
+using Ordering.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ordering.API
@@ -45,6 +49,7 @@ namespace Ordering.API
                     {
                         c.ConfigureConsumer<BasketCheckoutConsumer>(ctx);
                     });
+                    cfg.UseHealthCheck(ctx);
                 });
             });
             services.AddMassTransitHostedService();
@@ -58,6 +63,9 @@ namespace Ordering.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ordering.API", Version = "v1" });
             });
+
+            services.AddHealthChecks()
+                .AddDbContextCheck<OrderContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,6 +85,28 @@ namespace Ordering.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/hc", new HealthCheckOptions()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = async (context, report) =>
+                    {
+                        context.Response.ContentType = "application/json";
+                        var response = new Common.Health.HealthCheckResult
+                        {
+                            status = report.Status.ToString(),
+                            entries = report.Entries.Select(x => new Common.Health.HealthCheckResponse
+                            {
+                                key = x.Key,
+                                status = x.Value.Status.ToString(),
+                                description = x.Value.Description,
+                                exception = x.Value.Exception?.Message,
+                                tags = x.Value.Tags
+                            }),
+                            totalDuration = report.TotalDuration.ToString()
+                        };
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                    }
+                });
             });
         }
     }
